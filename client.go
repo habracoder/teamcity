@@ -37,8 +37,10 @@ func (c *Client) QueueBuild(buildTypeID string, branchName string, properties ma
 			Property []oneProperty `json:"property,omitempty"`
 		} `json:"properties"`
 		BranchName string `json:"branchName,omitempty"`
+		Personal string `json:"personal,omitempty"`
 	}{}
 	jsonQuery.BuildTypeID = buildTypeID
+	jsonQuery.Personal = "true"
 	if branchName != "" {
 		//jsonQuery.BranchName = fmt.Sprintf("refs/heads/%s", branchName)
 		jsonQuery.BranchName = branchName
