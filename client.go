@@ -19,6 +19,7 @@ type Client struct {
 	username   string
 	password   string
 	host       string
+	debug      bool
 }
 
 func New(host, username, password string) *Client {
@@ -28,6 +29,10 @@ func New(host, username, password string) *Client {
 		password:   password,
 		host:       host,
 	}
+}
+
+func (c *Client) SetDebug(debug bool) {
+	c.debug = debug
 }
 
 func (c *Client) QueueBuild(buildTypeID string, branchName string, properties map[string]string) (*Build, error) {
@@ -265,7 +270,9 @@ func (c *Client) addProtocol(path string) string {
 func (c *Client) doNotJSONRequest(method string, path string, data interface{}) ([]byte, error) {
 	authURL := c.addProtocol(path)
 
-	fmt.Printf("Sending request to %s\n", authURL)
+	if c.debug {
+		fmt.Printf("Sending request to %s\n", authURL)
+	}
 
 	var body io.Reader
 	if data != nil {
