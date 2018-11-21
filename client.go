@@ -91,6 +91,40 @@ func (c *Client) SearchBuild(locator string) ([]*Build, error) {
 	return respStruct.Build, nil
 }
 
+func (c *Client) GetQueuedBuilds(locator string) ([]*Build, error) {
+	path := fmt.Sprintf(
+		"/httpAuth/app/rest/buildQueue?locator=%s&fields="+
+		"count,"+
+		"build(" +
+			"*," +
+			"tags(tag)," +
+			"triggered(*)," +
+			"properties(property)," +
+			"problemOccurrences(*,problemOccurrence(*)),"+
+			"testOccurrences(*,testOccurrence(*)),"+
+			"changes(*,change(*))" +
+		")",
+		locator,
+	)
+	respStruct := struct {
+		Count int
+		Build []*Build
+	}{}
+	retries := 8
+	err := withRetry(retries, func() error {
+		return c.doRequest("GET", path, nil, &respStruct)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, build := range respStruct.Build {
+		build.convertInputs()
+	}
+
+	return respStruct.Build, nil
+}
+
 func (c *Client) GetBuild(buildID string) (*Build, error) {
 	path := fmt.Sprintf("/httpAuth/app/rest/builds/id:%s?fields=*,tags(tag),triggered(*),properties(property),problemOccurrences(*,problemOccurrence(*)),testOccurrences(*,testOccurrence(*)),changes(*,change(*))", buildID)
 	var build *Build
